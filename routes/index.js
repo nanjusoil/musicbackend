@@ -33,24 +33,11 @@ router.get('/download', function(req, res, next) {
       res.redirect('http://139.162.98.238'+req.query.id);
       qq.lyrics(songid).then((lyric) => {
         db.findSongById(songid, function(song){
-           var buffer = new Buffer(10000);
-           var fd = fs.openSync('/home/test/routes/200px-Felis_silvestris_silvestris_small_gradual_decrease_of_quality.png', 'r');
-           var bytesRead =  fs.readSync(fd, buffer, 0, buffer.length, null);
 
            let tags = {
            title: song.songname,
            artist: song.singer[0].name,
            album: song.albumname,
-           //image: '200px-Felis_silvestris_silvestris_small_gradual_decrease_of_quality.png',
-           image: {
-             mime: "png/jpeg"/undefined,
-             type: {
-               id: 3,
-               name: "front cover"
-             }, //See https://en.wikipedia.org/wiki/ID3#ID3v2_embedded_image_extension
-           description: "image description",
-           imageBuffer: buffer
-           },
            unsynchronisedLyrics: {
              text: lyric
            }
