@@ -4,6 +4,11 @@ const musicAPI = require('music-api');
 var fs = require('fs');
 var request = require('request');
 var opencc = require('node-opencc');
+var he = require('he');
+var qq = require('../util/qq.js');
+const NodeID3 = require('node-id3');
+const download = require('../util/download.js')
+const db = require('../util/db.js')
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -11,73 +16,52 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/search', function(req, res, next) {
-  musicAPI.searchSong('qq', {
-    key: req.query.song,
-    limit: 10,
-    page: 1,
-  })
-  .then(neteaseRes => {
-    console.log(neteaseRes);
-    arr = [];
-    neteaseRes.songList.map(song => {
-      arr.push({
-        //id: song.id,
-        id: '123',
-        title: opencc.simplifiedToTaiwan(song.name),
-        //data: "https://stonedog.sayfeel.tw/shin.mp3",
-        data: "http://139.162.98.238/data/" + song.id + ".mp3",
-        albumName: opencc.simplifiedToTaiwan(song.album.name),
-        artistName: opencc.simplifiedToTaiwan(song.artists[0].name),
-      });
-    })
-    res.send(arr);
-  })
-  .catch(err => console.log(err))
+  qq.search( req.query.song , 1).then((data) => res.send(data));
 });
 
 router.get('/download', function(req, res, next) {
   id = req.query.id.split("/")[2].split(".")[0];
+  songid = id.split("_")[0];
+  songmid= id.split("_")[1];
   musicAPI.getSong('qq', {
-    id: id,
+    id: songmid,
     raw: false,
   })
-  .then(neteaseRes => {
-  
-    download(neteaseRes.url, "/var/www/html/data/" + req.query.id.split("/")[2], function(){
-      res.redirect('http://139.162.98.238'+req.query.id)
+  .then(qqRes => {
+    var savePath = "/var/www/html/data/" + req.query.id.split("/")[2];
+    download(qqRes.url, savePath, function(){
+      res.redirect('http://139.162.98.238'+req.query.id);
+      qq.lyrics(songid).then((lyric) => {
+        db.findSongById(songid, function(song){
+           var buffer = new Buffer(10000);
+           var fd = fs.openSync('/home/test/routes/200px-Felis_silvestris_silvestris_small_gradual_decrease_of_quality.png', 'r');
+           var bytesRead =  fs.readSync(fd, buffer, 0, buffer.length, null);
+
+           let tags = {
+           title: song.songname,
+           artist: song.singer[0].name,
+           album: song.albumname,
+           //image: '200px-Felis_silvestris_silvestris_small_gradual_decrease_of_quality.png',
+           image: {
+             mime: "png/jpeg"/undefined,
+             type: {
+               id: 3,
+               name: "front cover"
+             }, //See https://en.wikipedia.org/wiki/ID3#ID3v2_embedded_image_extension
+           description: "image description",
+           imageBuffer: buffer
+           },
+           unsynchronisedLyrics: {
+             text: lyric
+           }
+          }
+          let ID3FrameBuffer = NodeID3.create(tags)   //  Returns ID3-Frame buffer
+          let success = NodeID3.write(tags, savePath)
+        })
+      }) 
     })
 
-  }) 
+  })
 });
-
-
-var download = function(url, dest, cb) {
-    var file = fs.createWriteStream(dest);
-    var sendReq = request.get(url);
-
-    // verify response code
-    sendReq.on('response', function(response) {
-        if (response.statusCode !== 200) {
-            return cb('Response status was ' + response.statusCode);
-        }
-    });
-
-    // check for request errors
-    sendReq.on('error', function (err) {
-        fs.unlink(dest);
-        return cb(err.message);
-    });
-
-    sendReq.pipe(file);
-
-    file.on('finish', function() {
-        file.close(cb);  // close() is async, call cb after close completes.
-    });
-
-    file.on('error', function(err) { // Handle errors
-        fs.unlink(dest); // Delete the file async. (But we don't check the result)
-        return cb(err.message);
-    });
-};
 
 module.exports = router;
