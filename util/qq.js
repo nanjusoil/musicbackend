@@ -42,6 +42,7 @@ const search = async (keyword, page) => {
         "title": opencc.simplifiedToTaiwan(he.decode(song.songname)),
         "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
         "albumName": opencc.simplifiedToTaiwan(he.decode(song.albumname)),
+	"albumId": song.albumid,
         "artistName": opencc.simplifiedToTaiwan(he.decode(song.singer[0].name))
       })
     });
