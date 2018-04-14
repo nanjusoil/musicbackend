@@ -58,8 +58,9 @@ router.get('/download', function(req, res, next) {
   })
 });
 router.get('/lyrics', function(req, res, next) {
-  db.findSongById(songid, function(song){
-    res.send(song.lyric);
+  db.findSongById(req.query.id, function(song){
+    if(song)
+      res.send(song.lyric);
   })
 });
 router.get('/albumpic', function(req, res, next) {
@@ -84,9 +85,12 @@ router.get('/popularsongs', function(req, res, next) {
 })
 
 router.get('/popularplaylists', function(req, res, next) {
-  res.send([{
-    "id":"123",
-    "name": "QAQ"
-  }]);
+  res.send([{"title": "123", "name":"情歌"}])
+})
+
+router.get('/playlist', function(req, res, next) {
+  db.findPopular(function(result){
+    res.send(result)
+  })
 })
 module.exports = router;

@@ -28,6 +28,8 @@ MongoClient.connect(url, function(err, client) {
 const findDocuments = function(db, id, callback) {
   const collection = db.collection('song');
   collection.findOne({songid: parseInt(id)}, function(err, docs) {
+    if(err)
+      console.log(err);
       callback(docs);
   })
 }
