@@ -39,11 +39,11 @@ const search = async (keyword, page) => {
     body.data.song.list.map(function(song){
       result.push({
         "id": song.songid,
-        "title": opencc.simplifiedToTaiwan(he.decode(song.songname)),
+        "title": song.songname,
         "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
-        "albumName": opencc.simplifiedToTaiwan(he.decode(song.albumname)),
+        "albumName": song.albumname,
 	"albumId": song.albumid,
-        "artistName": opencc.simplifiedToTaiwan(he.decode(song.singer[0].name))
+        "artistName": song.singer[0].name
       })
     });
     return result;
@@ -77,7 +77,7 @@ function updateSongIfNotExist(db, body, callback){
       body.data.song.list.map(function(song){
         collection.update(
          {songid: song.songid},
-         song,
+         opencc.simplifiedToTaiwan(he.decode(song)),
          {upsert: true},
          function(err,data){
           if (err){

@@ -44,6 +44,26 @@ const findPopular = function(cb) {
             datas.forEach(function(song) {
                 ret.push({
                     "id": song.songid,
+                    "title": song.songname,
+                    "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
+                    "albumName": song.albumname,
+                    "albumId": song.albumid,
+                    "artistName": song.singer[0].name
+                })
+            })
+            console.log(ret);
+            cb(ret);
+        })
+    })
+};
+
+const findPlaylist = function(name, cb) {
+    ret = [];
+    client.lrange("featured_playlist:"+name, 1, 50, function(err, res) {
+        findSongsById(res, function(datas) {
+            datas.forEach(function(song) {
+                ret.push({
+                    "id": song.songid,
                     "title": opencc.simplifiedToTaiwan(he.decode(song.songname)),
                     "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
                     "albumName": opencc.simplifiedToTaiwan(he.decode(song.albumname)),
@@ -78,5 +98,6 @@ module.exports = {
     findSongById,
     saveLyricById,
     findPopular,
-    findSongsById
+    findSongsById,
+    findPlaylist
 }

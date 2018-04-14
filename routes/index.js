@@ -77,7 +77,6 @@ router.get('/albumpic', function(req, res, next) {
 });
 
 router.get('/popularsongs', function(req, res, next) {
-
     db.findPopular(function(result) {
         res.send(result)
     })
@@ -91,7 +90,7 @@ router.get('/popularplaylists', function(req, res, next) {
 })
 
 router.get('/playlist', function(req, res, next) {
-    db.findPopular(function(result) {
+    db.findPlaylist("HXCFeL6rLBMWLCXDfI",function(result) {
         res.send(result)
     })
 })
