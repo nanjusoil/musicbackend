@@ -16,8 +16,8 @@ function daily_chart() {
             songs = body.data.charts.newrelease;
             for (var i = 0; i < songs.length; i++) {
                 setTimeout(function(i) {
-                    songname = songs[i].song_name.split(" ")[0];
-                    artistname = songs[i].artist_name.split(" ")[0];
+                    songname = songs[i].song_name.split("(")[0];
+                    artistname = songs[i].artist_name.split("(")[0];
                     client.get("kkbox_id:" + songs[i].song_id, function(err, res) {
                         if (res == null) {
                             qq.search(songname + ' ' + artistname, 1).then((data) => {
@@ -38,7 +38,36 @@ function daily_chart() {
     })
 }
 
+function featured_playlist(id) {
+  request('https://www.kkbox.com/tw/tc/ajax/wp_songinfo.php?act=5&content_id='+ id + '&ver=2', function(error, response, body) {
+      body = JSON.parse(body);
+      songs = body.data;
+        for (var i = 0; i < songs.length; i++) {
+            setTimeout(function(i) {
+                songname = songs[i].song_name.split("(")[0];
+                artistname = songs[i].artist_name.split("(")[0];
+                console.log(songname + artistname);
+                client.get("kkbox_id:" + songs[i].song_content_id, function(err, res) {
+                    if (res == null) {
+                        qq.search(songname + ' ' + artistname, 1).then((data) => {
+                            console.log(songs[i].song_content_id);
+                            console.log(data[0]);
+                            if (typeof data[0] != 'undefined') {
+                                client.set("kkbox_id:" + songs[i].song_content_id, data[0].id, redis.print);
+                                client.lpush("featured_playlist:" + id, data[0].id, redis.print);
+                            }
+                        });
+                    } else {
+                        client.lpush("featured_playlist:" + id, res, redis.print);
+                    }
+                })
+            }, 1000 * 6 * i, i)
+        }
+  });
 
-daily_chart();
+}
+
+
+featured_playlist("HXCFeL6rLBMWLCXDfI");
 
 
