@@ -14,10 +14,27 @@ MongoClient.connect(url, function(err, client) {
 });
 };
 
+const findPopular = function( cb){
+MongoClient.connect(url, function(err, client) {
+  const db = client.db(dbName);
+  findAllPopular(db, function(docs) {
+    client.close();
+    cb(docs);
+  });
+});
+};
+
 
 const findDocuments = function(db, id, callback) {
   const collection = db.collection('song');
   collection.findOne({songid: parseInt(id)}, function(err, docs) {
+      callback(docs);
+  })
+}
+
+const findAllPopular = function(db, callback) {
+  const collection = db.collection('popular');
+  collection.find({}).toArray(function(err, docs) {
       callback(docs);
   })
 }
@@ -42,5 +59,6 @@ const updateDocument = function(db, id, lyric, callback) {
 }
 module.exports = {
 findSongById,
-saveLyricById
+saveLyricById,
+findPopular
 }

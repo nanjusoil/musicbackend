@@ -9,6 +9,8 @@ var qq = require('../util/qq.js');
 const NodeID3 = require('node-id3');
 const download = require('../util/download.js')
 const db = require('../util/db.js')
+var redis = require("redis"),
+    client = redis.createClient();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -74,4 +76,17 @@ router.get('/albumpic', function(req, res, next) {
     })
 });
 
+router.get('/popularsongs', function(req, res, next) {
+
+  db.findPopular(function(result){
+    res.send(result)
+  })
+})
+
+router.get('/popularplaylists', function(req, res, next) {
+  res.send([{
+    "id":"123",
+    "name": "QAQ"
+  }]);
+})
 module.exports = router;
