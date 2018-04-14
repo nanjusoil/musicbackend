@@ -95,6 +95,3 @@ module.exports = {
   search,
 }
 
-//lyrics(129203).then((res) => console.log( res ) );
-//search('死了都要愛' , 1).then((ret) => {console.log(ret)});
-

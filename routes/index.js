@@ -3,7 +3,6 @@ var router = express.Router();
 const musicAPI = require('music-api');
 var fs = require('fs');
 var request = require('request');
-var opencc = require('node-opencc');
 var he = require('he');
 var qq = require('../util/qq.js');
 const NodeID3 = require('node-id3');

@@ -1,5 +1,4 @@
 var request = require('request-promise');
-var opencc = require('node-opencc');
 var he = require('he');
 var redis = require("redis");
 var client = redis.createClient();
