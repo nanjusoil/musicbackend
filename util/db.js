@@ -3,7 +3,8 @@ const url = 'mongodb://localhost:27017';
 const dbName = 'music';
 var redis = require("redis");
 var client = redis.createClient();
-const opencc = require('node-opencc');
+var OpenCC = require('opencc');
+var opencc = new OpenCC('s2twp.json');
 const he = require('he');
 
 
@@ -44,14 +45,13 @@ const findPopular = function(cb) {
             datas.forEach(function(song) {
                 ret.push({
                     "id": song.songid,
-                    "title": song.songname,
+                    "title": opencc.convertSync(he.decode(song.songname)),
                     "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
-                    "albumName": song.albumname,
+                    "albumName": opencc.convertSync(he.decode(song.albumname)),
                     "albumId": song.albumid,
-                    "artistName": song.singer[0].name
+                    "artistName": opencc.convertSync(he.decode(song.singer[0].name))
                 })
             })
-            console.log(ret);
             cb(ret);
         })
     })
@@ -64,11 +64,11 @@ const findPlaylist = function(name, cb) {
             datas.forEach(function(song) {
                 ret.push({
                     "id": song.songid,
-                    "title": opencc.simplifiedToTaiwan(he.decode(song.songname)),
+                    "title": opencc.convertSync(he.decode(song.songname)),
                     "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
-                    "albumName": opencc.simplifiedToTaiwan(he.decode(song.albumname)),
+                    "albumName": opencc.convertSync(he.decode(song.albumname)),
                     "albumId": song.albumid,
-                    "artistName": opencc.simplifiedToTaiwan(he.decode(song.singer[0].name))
+                    "artistName": opencc.convertSync(he.decode(song.singer[0].name))
                 })
             })
             cb(ret);

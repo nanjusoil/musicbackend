@@ -1,5 +1,6 @@
 const request = require('request-promise');
-const opencc = require('node-opencc');
+var OpenCC = require('opencc');
+var opencc = new OpenCC('s2twp.json');
 const he = require('he');
 const MongoClient = require('mongodb').MongoClient;
 
@@ -39,11 +40,11 @@ const search = async (keyword, page) => {
     body.data.song.list.map(function(song){
       result.push({
         "id": song.songid,
-        "title": song.songname,
+        "title": opencc.convertSync(he.decode(song.songname)),
         "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
-        "albumName": song.albumname,
+        "albumName": opencc.convertSync(he.decode(song.albumname)),
 	"albumId": song.albumid,
-        "artistName": song.singer[0].name
+        "artistName": opencc.convertSync(he.decode(song.singer[0].name))
       })
     });
     return result;
@@ -66,7 +67,7 @@ const lyrics = async (id, type) => {
         'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
       }
     })).replace(/MusicJsonCallback\((.*)\)/, '$1')
-    return opencc.simplifiedToTaiwan( he.decode(JSON.parse(text).lyric));
+    return opencc.convertSync( he.decode(JSON.parse(text).lyric));
   } catch(e) {
     return e.message; 
   }
@@ -77,7 +78,7 @@ function updateSongIfNotExist(db, body, callback){
       body.data.song.list.map(function(song){
         collection.update(
          {songid: song.songid},
-         opencc.simplifiedToTaiwan(he.decode(song)),
+         song,
          {upsert: true},
          function(err,data){
           if (err){
