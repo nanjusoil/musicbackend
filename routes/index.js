@@ -82,14 +82,14 @@ router.get('/popularsongs', function(req, res, next) {
 })
 
 router.get('/popularplaylists', function(req, res, next) {
-    res.send([{
-        "title": "123",
-        "name": "情歌"
-    }])
+    db.findPopularPlaylists(function(result) {
+        console.log("done");
+        res.send(result)
+    })
 })
 
 router.get('/playlist', function(req, res, next) {
-    db.findPlaylist("HXCFeL6rLBMWLCXDfI",function(result) {
+    db.findPlaylistByIndex(req.query.id,function(result) {
         res.send(result)
     })
 })

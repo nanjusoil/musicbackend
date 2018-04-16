@@ -57,22 +57,42 @@ const findPopular = function(cb) {
     })
 };
 
-const findPlaylist = function(name, cb) {
+const findPlaylistByIndex = function(index, cb) {
+    index = parseInt(index);
     ret = [];
-    client.lrange("featured_playlist:"+name, 1, 50, function(err, res) {
-        findSongsById(res, function(datas) {
-            datas.forEach(function(song) {
-                ret.push({
-                    "id": song.songid,
-                    "title": opencc.convertSync(he.decode(song.songname)),
-                    "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
-                    "albumName": opencc.convertSync(he.decode(song.albumname)),
-                    "albumId": song.albumid,
-                    "artistName": opencc.convertSync(he.decode(song.singer[0].name))
+    client.keys("kkbox_playlist:*", function(err , playlist_name){
+        client.lrange(playlist_name[index], 1, 50, function(err, res) {
+            findSongsById(res, function(datas) {
+                datas.forEach(function(song) {
+                    ret.push({
+                        "id": song.songid,
+                        "title": opencc.convertSync(he.decode(song.songname)),
+                        "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
+                        "albumName": opencc.convertSync(he.decode(song.albumname)),
+                        "albumId": song.albumid,
+                        "artistName": opencc.convertSync(he.decode(song.singer[0].name))
+                    })
                 })
+                cb(ret);
             })
+        })
+    })
+
+};
+
+const findPopularPlaylists = function(cb) {
+    ret = [];
+    client.keys("kkbox_playlist:*", function(err , playlist_name){
+        client.hgetall("kkbox_playlist_name", function(err, names){
+            for(var i = 0 ; i < playlist_name.length ; i++){
+                ret.push({
+                    id: i,
+                    name: names[playlist_name[i].split(':')[1]]
+                })
+            }
             cb(ret);
         })
+
     })
 };
 
@@ -99,5 +119,6 @@ module.exports = {
     saveLyricById,
     findPopular,
     findSongsById,
-    findPlaylist
+    findPlaylistByIndex,
+    findPopularPlaylists
 }
