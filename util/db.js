@@ -39,8 +39,8 @@ const findSongsById = function(ids, cb) {
 };
 
 const findPopular = function(cb) {
-    ret = [];
-    client.lrange("popular", 1, 50, function(err, res) {
+    var ret = [];
+    client.lrange("kkbox_popular", 1, 50, function(err, res) {
         findSongsById(res, function(datas) {
             datas.forEach(function(song) {
                 ret.push({
@@ -59,7 +59,7 @@ const findPopular = function(cb) {
 
 const findPlaylistByIndex = function(index, cb) {
     index = parseInt(index);
-    ret = [];
+    var ret = [];
     client.keys("kkbox_playlist:*", function(err , playlist_name){
         client.lrange(playlist_name[index], 1, 50, function(err, res) {
             findSongsById(res, function(datas) {
@@ -77,23 +77,41 @@ const findPlaylistByIndex = function(index, cb) {
             })
         })
     })
+};
 
+const findGenreByIndex = function(index, cb) {
+    index = parseInt(index);
+    var ret = [];
+    client.lrange("kkbox_popular_genre:" + index, 1, 50, function(err, res) {
+        findSongsById(res, function(datas) {
+            datas.forEach(function(song) {
+                ret.push({
+                    "id": song.songid,
+                    "title": opencc.convertSync(he.decode(song.songname)),
+                    "data": `http://139.162.98.238/data/${song.songid}_${song.songmid}.mp3`,
+                    "albumName": opencc.convertSync(he.decode(song.albumname)),
+                    "albumId": song.albumid,
+                    "artistName": opencc.convertSync(he.decode(song.singer[0].name))
+                })
+            })
+            cb(ret);
+        })
+    })
 };
 
 const findPopularPlaylists = function(cb) {
-    ret = [];
-    client.keys("kkbox_playlist:*", function(err , playlist_name){
-        client.hgetall("kkbox_playlist_name", function(err, names){
-            for(var i = 0 ; i < playlist_name.length ; i++){
-                ret.push({
-                    id: i,
-                    name: names[playlist_name[i].split(':')[1]]
-                })
-            }
-            cb(ret);
-        })
-
+    var ret = [];
+    client.hgetall("kkbox_playlist_name", function(err, names){
+        var i = 1;
+        for(var name in names){
+            ret.push({
+                id: i++,
+                name: names[name]
+            })
+        }
+        cb(ret);
     })
+
 };
 
 const saveLyricById = function(id, lyric, cb) {
@@ -120,5 +138,6 @@ module.exports = {
     findPopular,
     findSongsById,
     findPlaylistByIndex,
-    findPopularPlaylists
+    findPopularPlaylists,
+    findGenreByIndex
 }

@@ -93,4 +93,30 @@ router.get('/playlist', function(req, res, next) {
         res.send(result)
     })
 })
+
+router.get('/populargenre', function(req, res, next) {
+    res.send([{'id':'297', 'name':"華語"},
+{'id':'390', 'name':"西洋"},
+{'id':'308', 'name':"日語"},
+{'id':'314', 'name':"韓語"},
+{'id':'304', 'name':"台語"},
+{'id':'320', 'name':"粵語"},
+{'id':'343', 'name':"原聲帶"},
+{'id':'325', 'name':"電子"},
+{'id':'324', 'name':"嘻哈"},
+{'id':'335', 'name':"R&B"},
+{'id':'13', 'name':"搖滾"},
+{'id':'331', 'name':"另類/獨立"},
+{'id':'69', 'name':"爵士"},
+{'id':'336', 'name':"靈魂樂"},
+{'id':'352', 'name':"鄉村"},
+{'id':'348', 'name':"雷鬼"}]
+)
+})
+
+router.get('/genre', function(req, res, next) {
+    db.findGenreByIndex(req.query.id,function(result) {
+        res.send(result)
+    })
+})
 module.exports = router;
