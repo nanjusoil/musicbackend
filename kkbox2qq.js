@@ -58,31 +58,35 @@ function fetch_daily_chart() {
 }
 
 function fetch_featured_playlist(id) {
-  request('https://www.kkbox.com/tw/tc/ajax/wp_songinfo.php?act=5&content_id='+ id + '&ver=2', function(error, response, body) {
-      body = JSON.parse(body);
-      songs = body.data;
-        for (var i = 0; i < songs.length; i++) {
-            setTimeout(function(i) {
-                songname = songs[i].song_name.split("(")[0];
-                artistname = songs[i].artist_name.split("(")[0];
-                console.log(songname + artistname);
-                client.get("kkbox_id:" + songs[i].song_content_id, function(err, res) {
-                    if (res == null) {
-                        qq.search(songname + ' ' + artistname, 1).then((data) => {
-                            console.log(songs[i].song_content_id);
-                            console.log(data[0]);
-                            if (typeof data[0] != 'undefined') {
-                                client.set("kkbox_id:" + songs[i].song_content_id, data[0].id, redis.print);
-                                client.lpush("featured_playlist:" + id, data[0].id, redis.print);
-                            }
-                        });
-                    } else {
-                        client.lpush("featured_playlist:" + id, res, redis.print);
-                    }
-                })
-            }, 1000 * 6 * i, i)
-        }
-  });
+    client.del("kkbox_playlist:" + id, function(err, res) {
+        if (res == 1)
+            console.log("deleted popular");
+      request('https://www.kkbox.com/tw/tc/ajax/wp_songinfo.php?act=5&content_id='+ id + '&ver=2', function(error, response, body) {
+          body = JSON.parse(body);
+          songs = body.data;
+            for (var i = 0; i < songs.length; i++) {
+                setTimeout(function(i) {
+                    songname = songs[i].song_name.split("(")[0];
+                    artistname = songs[i].artist_name.split("(")[0];
+                    console.log(songname + artistname);
+                    client.get("kkbox_id:" + songs[i].song_content_id, function(err, res) {
+                        if (res == null) {
+                            qq.search(songname + ' ' + artistname, 1).then((data) => {
+                                console.log(songs[i].song_content_id);
+                                console.log(data[0]);
+                                if (typeof data[0] != 'undefined') {
+                                    client.set("kkbox_id:" + songs[i].song_content_id, data[0].id, redis.print);
+                                    client.lpush("kkbox_playlist:" + id, data[0].id, redis.print);
+                                }
+                            });
+                        } else {
+                            client.lpush("kkbox_playlist:" + id, res, redis.print);
+                        }
+                    })
+                }, 1000 * 6 * i, i)
+            }
+      });
+  })
 }
 
 function fetch_genre(key){
@@ -119,9 +123,13 @@ function fetch_genre(key){
 //kkboxCateToChinese.forEach(function(val, key){
 //    fetch_genre(key);
 //})
-fetch_genre('297');
+//fetch_genre('308');
 //fetch_daily_chart();
 
-//featured_playlist("HXCFeL6rLBMWLCXDfI");
-
+//fetch_featured_playlist("HXCFeL6rLBMWLCXDfI");
+module.exports = {
+    fetch_daily_chart,
+    fetch_featured_playlist,
+    fetch_genre
+}
 

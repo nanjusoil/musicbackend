@@ -36,7 +36,7 @@ router.get('/download', function(req, res, next) {
                 res.redirect('http://139.162.98.238' + req.query.id);
                 qq.lyrics(songid).then((lyric) => {
 
-                    db.saveLyricById(songid, lyric, function(res) {});
+                    db.saveLyricById(songid, lyric, function(data) {});
 
                     db.findSongById(songid, function(song) {
 
@@ -119,4 +119,23 @@ router.get('/genre', function(req, res, next) {
         res.send(result)
     })
 })
+
+router.get('/genre', function(req, res, next) {
+    db.findGenreByIndex(req.query.id,function(result) {
+        res.send(result)
+    })
+})
+
+router.get('/userplaylist', function(req, res, next) {
+	if(req.query.id == ''){
+	    db.findPlaylistsByAccessToken(req.query.accesstoken,function(result) {
+	        res.send(result)
+	    });
+	 }else{
+	    db.findPlaylistByIdAndAccesstoken(req.query.accesstoken,req.query.id ,function(result) {
+	        res.send(result)
+	    });
+	 }
+})
+
 module.exports = router;

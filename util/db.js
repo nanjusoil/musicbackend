@@ -40,7 +40,7 @@ const findSongsById = function(ids, cb) {
 
 const findPopular = function(cb) {
     var ret = [];
-    client.lrange("kkbox_popular", 1, 50, function(err, res) {
+    client.lrange("kkbox_popular", 0, 50, function(err, res) {
         findSongsById(res, function(datas) {
             datas.forEach(function(song) {
                 ret.push({
@@ -61,7 +61,8 @@ const findPlaylistByIndex = function(index, cb) {
     index = parseInt(index);
     var ret = [];
     client.keys("kkbox_playlist:*", function(err , playlist_name){
-        client.lrange(playlist_name[index], 1, 50, function(err, res) {
+        client.lrange(playlist_name[index - 1], 0, 50, function(err, res) {//避免android id
+            console.log(res)
             findSongsById(res, function(datas) {
                 datas.forEach(function(song) {
                     ret.push({
@@ -82,7 +83,7 @@ const findPlaylistByIndex = function(index, cb) {
 const findGenreByIndex = function(index, cb) {
     index = parseInt(index);
     var ret = [];
-    client.lrange("kkbox_popular_genre:" + index, 1, 50, function(err, res) {
+    client.lrange("kkbox_popular_genre:" + index, 0, 50, function(err, res) {
         findSongsById(res, function(datas) {
             datas.forEach(function(song) {
                 ret.push({
@@ -101,12 +102,14 @@ const findGenreByIndex = function(index, cb) {
 
 const findPopularPlaylists = function(cb) {
     var ret = [];
-    client.hgetall("kkbox_playlist_name", function(err, names){
+    client.hgetall("kkbox_playlist", function(err, names){
         var i = 1;
         for(var name in names){
             ret.push({
                 id: i++,
-                name: names[name]
+                name: names[name],
+                //albumCover: name
+                albumCover: "http://139.162.98.238/data/kkboximg/" + name + ".jpg"
             })
         }
         cb(ret);
@@ -132,6 +135,34 @@ const saveLyricById = function(id, lyric, cb) {
     });
 };
 
+const findPlaylistsByAccessToken = function(accestoken, cb) {
+     var ret = [];
+    client.hgetall("accesstoken_playlist:" + accestoken, function(err, names){
+        var i = 1;
+        for(var name in names){
+            ret.push({
+                id:name ,
+                name: names[name]
+            })
+        }
+        cb(ret);
+    })
+};
+
+const findPlaylistByIdAndAccesstoken = function(accestoken, id, cb) {
+     var ret = [];
+    client.hget("accesstoken_playlist:" + accestoken, id, function(err, res) {
+        if(res){
+            console.log(res);
+            client.lrange("user_playlist:" + id, 0, 50, function(err, res) {
+                //console.log(res);
+                cb(res);
+            })
+        }
+    })
+};
+
+
 module.exports = {
     findSongById,
     saveLyricById,
@@ -139,5 +170,7 @@ module.exports = {
     findSongsById,
     findPlaylistByIndex,
     findPopularPlaylists,
-    findGenreByIndex
+    findGenreByIndex,
+    findPlaylistsByAccessToken,
+    findPlaylistByIdAndAccesstoken
 }

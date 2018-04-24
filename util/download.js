@@ -9,6 +9,7 @@ module.exports  = function(url, dest, cb) {
     // verify response code
     sendReq.on('response', function(response) {
         if (response.statusCode !== 200) {
+            console.log(url + 'Response status was ' + response.statusCode)
             return cb('Response status was ' + response.statusCode);
         }
     });
