@@ -127,7 +127,7 @@ router.get('/genre', function(req, res, next) {
 })
 
 router.get('/userplaylist', function(req, res, next) {
-	if(req.query.id == ''){
+	if(typeof req.query.id == 'undefined'){
 	    db.findPlaylistsByAccessToken(req.query.accesstoken,function(result) {
 	        res.send(result)
 	    });

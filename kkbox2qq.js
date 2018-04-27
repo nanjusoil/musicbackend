@@ -2,9 +2,13 @@ var request = require('request-promise');
 var he = require('he');
 var redis = require("redis");
 var client = redis.createClient();
+var cheerio = require('cheerio');
+
 
 var qq = require('./util/qq');
 var db = require('./util/db');
+var download = require('./util/download');
+
 
 var kkboxCateToChinese=[];
 kkboxCateToChinese['297'] = "華語";
@@ -30,7 +34,7 @@ function fetch_daily_chart() {
     client.del("kkbox_popular", function(err, res) {
         if (res == 1)
             console.log("deleted popular");
-        request('https://kma.kkbox.com/charts/api/v1/daily?category=297&date=2018-04-12&lang=tc&limit=50&terr=tw&type=newrelease', function(error, response, body) {
+        request('https://kma.kkbox.com/charts/api/v1/daily?category=297&lang=tc&limit=50&terr=tw&type=newrelease', function(error, response, body) {
             body = JSON.parse(body);
             songs = body.data.charts.newrelease;
             for (var i = 0; i < songs.length; i++) {
@@ -87,6 +91,16 @@ function fetch_featured_playlist(id) {
             }
       });
   })
+    request('https://www.kkbox.com/tw/tc/playlist/' + id, function(error, response, body) {
+        const $ = cheerio.load(body);
+        var utl = $('.four-more-meta img').attr('src');
+        var savePath = "/var/www/html/data/kkboximg/" + id + '.jpg';
+        download(utl, savePath, function(err) {
+            if (err)
+                console.log(err);
+        })
+    })
+
 }
 
 function fetch_genre(key){
@@ -125,6 +139,7 @@ function fetch_genre(key){
 //})
 //fetch_genre('308');
 //fetch_daily_chart();
+fetch_featured_playlist('8riMtxOT0-n8SIS_uv');
 
 //fetch_featured_playlist("HXCFeL6rLBMWLCXDfI");
 module.exports = {

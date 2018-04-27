@@ -60,7 +60,9 @@ const findPopular = function(cb) {
 const findPlaylistByIndex = function(index, cb) {
     index = parseInt(index);
     var ret = [];
+    //改成用id
     client.keys("kkbox_playlist:*", function(err , playlist_name){
+        console.log(playlist_name)
         client.lrange(playlist_name[index - 1], 0, 50, function(err, res) {//避免android id
             console.log(res)
             findSongsById(res, function(datas) {
